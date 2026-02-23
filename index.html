@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>BrunoStock — Ultimate Neon PRO</title>
+    <title>BrunoStock — Ultimate Neon Ultimate</title>
     
     <script src="https://unpkg.com/@zxing/library@latest"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -193,6 +193,26 @@
     }
 
 }
+/* ===== Assinatura Profissional ===== */
+
+.dev-signature {
+    text-align: center;
+    font-size: 0.65rem;
+    color: #777;
+    padding: 20px 10px 120px 10px; /* espaço por causa do menu fixo */
+    line-height: 1.4;
+    letter-spacing: 0.5px;
+    opacity: 0.7;
+}
+
+.dev-signature div:nth-child(3) {
+    color: var(--gold);
+    font-weight: 600;
+}
+
+.dev-signature:hover {
+    opacity: 1;
+}
     </style>
 </head>
 <body class="dark">
@@ -218,14 +238,16 @@
             <button onclick="typePin('0')" class="btn btn-gold" style="border-radius:50%; width:75px; height:75px; font-size:1.5rem;">0</button>
             <button onclick="resetPin()" class="btn btn-blue" style="border-radius:50%; width:75px; height:75px; background:transparent; border:2px solid var(--blue-neon); color:var(--blue-neon);"><i class="fa-solid fa-eraser"></i></button>
         </div>
-        <small style="margin-top: 50px; color: #666; font-weight: 600; letter-spacing: 1px;">Desenvolvedor Carlos França</small>
+       <small id="pin-copyright"
+       style="margin-top:50px; color:#666; font-weight:600; letter-spacing:1px; font-size:0.7rem;">
+</small>
     </div>
 
     <div id="mainApp" class="hidden">
         <header>
             <div style="display:flex; align-items:center; gap:14px;">
                 <img src="logo.png" class="logo-b" onerror="this.src='https://via.placeholder.com/50'">
-                <b style="color:var(--gold); letter-spacing: 1px;">BRUNOSTOCK PRO</b>
+                <b style="color:var(--gold); letter-spacing: 1px;">BRUNOSTOCK Ultimate</b>
             </div>
             <div style="display:flex; gap:20px; align-items:center;">
                 <i id="eye-icon" class="fa-solid fa-eye" onclick="togglePrivacy()" style="color:var(--blue-neon); cursor:pointer;"></i>
@@ -259,7 +281,7 @@
                 </div>
 
                 <div style="text-align: center; margin-top: 10px;">
-                    <small style="color: #666; font-weight: 600;">Sistema de Gestão Profissional</small>
+                    <small style="color: #666; font-weight: 600;"></small>
                 </div>
             </div>
 
@@ -417,6 +439,7 @@
         let alertMuted = false; 
         let currentImg = "";
         let currentReportData = null;
+        let simulationMode = false; // Modo oculto de simulação
 
         // Inicialização do Banco de Dados IndexedDB
         const openReq = indexedDB.open("BrunoStock_Ultimate_V6", 1);
@@ -480,14 +503,26 @@
             if(pAcc.length < 4) {
                 pAcc += n; 
                 document.querySelectorAll('.dot')[pAcc.length-1].style.background = "var(--gold)";
-                if(pAcc.length === 4) {
-                    if(pAcc === "7979") login();
-                    else { 
-                        play('erro'); 
-                        resetPin(); 
-                        alert("PIN INCORRETO");
-                    }
-                }
+                // PIN normal (7979)
+if(pAcc === "7979") {
+    simulationMode = false;
+    login();
+    return;
+}
+
+// PIN oculto de simulação
+if(pAcc === "9454") {
+    simulationMode = true;
+    login();
+    return;
+}
+
+// Reset se exceder tamanho máximo
+if(pAcc.length >= 12) {
+    play('erro');
+    resetPin();
+    alert("PIN INCORRETO");
+}
             }
         }
 
@@ -719,6 +754,14 @@
 
         function closeSale() {
             if(!cart.length) return alert("Carrinho vazio!");
+// Se estiver em modo simulação, não registrar venda
+if(simulationMode) {
+    play('caixa');
+    alert("VENDA SIMULADA (MODO TESTE)");
+    cart = [];
+    renderCart();
+    return;
+}
             const method = document.getElementById('pay-method').value;
             
             let totalVenda = 0;
@@ -859,7 +902,7 @@
             doc.setFillColor(3, 3, 5);
             doc.rect(0, 0, 210, 40, 'F');
             doc.setTextColor(255, 204, 0);
-            doc.setFontSize(22); doc.text("BrunoStock PRO — Relatório", 15, 25);
+            doc.setFontSize(22); doc.text("BrunoStock Ultimate — Relatório", 15, 25);
             
             doc.setTextColor(100);
             doc.setFontSize(10); doc.text("Emissor: Carlos França | Data: " + dateStr, 15, 35);
@@ -978,25 +1021,52 @@
         }
 
         function importBackup(input) {
-            const file = input.files[0];
-            if(!file) return;
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                try {
-                    const data = JSON.parse(e.target.result);
-                    const tx = db.transaction(["products", "sales"], "readwrite");
-                    if(data.products) data.products.forEach(p => tx.objectStore("products").put(p));
-                    if(data.sales) data.sales.forEach(s => tx.objectStore("sales").put(s));
-                    tx.oncomplete = () => {
-                        alert("DADOS RESTAURADOS COM SUCESSO!");
-                        location.reload();
-                    };
-                } catch(err) {
-                    alert("Erro ao ler arquivo de backup.");
-                }
+    const file = input.files[0];
+    if(!file) return;
+
+    const reader = new FileReader();
+
+    reader.onload = (e) => {
+        try {
+            const data = JSON.parse(e.target.result);
+
+            const tx = db.transaction(["products", "sales", "logs"], "readwrite");
+
+            if(data.products)
+                data.products.forEach(p => tx.objectStore("products").put(p));
+
+            if(data.sales)
+                data.sales.forEach(s => tx.objectStore("sales").put(s));
+
+            if(data.logs)
+                data.logs.forEach(l => tx.objectStore("logs").put(l));
+
+            tx.oncomplete = () => {
+                alert("DADOS RESTAURADOS COM SUCESSO!");
+                location.reload();
             };
-            reader.readAsDataURL(file);
+
+        } catch(err) {
+            alert("Erro ao ler arquivo de backup.");
         }
+    };
+
+    reader.readAsText(file);
+}
+// Ano automático no PIN
+document.addEventListener("DOMContentLoaded", function () {
+    const year = new Date().getFullYear();
+    const el = document.getElementById("pin-copyright");
+    if (el) {
+        el.innerText = `© ${year} Carlos França — All Rights Reserved`;
+    }
+});
     </script>
+<footer class="dev-signature">
+    <div>Sistema de Gestão Profissional</div>
+    <div>Software Engineer | Front-End Architecture</div>
+    <div>Desenvolvido por Carlos França</div>
+    <div>desenvolvedorcarlosfranca@gmail.com</div>
+</footer>
 </body>
 </html>
