@@ -1,0 +1,946 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>BrunoStock — Ultimate Neon PRO</title>
+    
+    <script src="https://unpkg.com/@zxing/library@latest"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <style>
+        :root {
+            --bg: #030305; --card: rgba(22, 22, 28, 0.95); --gold: #ffcc00; --text: #f0f0f0;
+            --blue-neon: #00f2ff; --red-neon: #ff0055; --green-neon: #39ff14; --border: rgba(255, 204, 0, 0.15);
+            --shadow-neon: 0 0 15px rgba(255, 204, 0, 0.3);
+        }
+        body.light {
+            --bg: #eef2f5; --card: #ffffff; --gold: #a67c00; --text: #222222;
+            --blue-neon: #0056b3; --red-neon: #d00000; --green-neon: #1b852e; --border: rgba(0, 0, 0, 0.1);
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; font-family: 'Segoe UI', Roboto, sans-serif; }
+        body { margin: 0; background-color: var(--bg); color: var(--text); height: 100vh; overflow: hidden; display: flex; flex-direction: column; transition: 0.3s ease; }
+
+        /* Barra de rolagem customizada para manter a estética Neon */
+        .container, .scroll-area, #prod-list-container, #cart-items { 
+            overflow-y: auto !important; 
+            scrollbar-width: thin; 
+            scrollbar-color: var(--gold) transparent; 
+        }
+        .container::-webkit-scrollbar, .scroll-area::-webkit-scrollbar { width: 6px; }
+        .container::-webkit-scrollbar-thumb, .scroll-area::-webkit-scrollbar-thumb { background: var(--gold); border-radius: 10px; }
+
+/* ================= SCROLL LATERAL GLOBAL ================= */
+
+.container, 
+#prod-list-container, 
+#cart-items,
+#report-content,
+#quick-results {
+    overflow-x: auto !important;
+}
+
+/* Scroll horizontal neon */
+.container::-webkit-scrollbar,
+#prod-list-container::-webkit-scrollbar,
+#cart-items::-webkit-scrollbar,
+#report-content::-webkit-scrollbar,
+#quick-results::-webkit-scrollbar {
+    height: 6px;
+}
+
+.container::-webkit-scrollbar-thumb,
+#prod-list-container::-webkit-scrollbar-thumb,
+#cart-items::-webkit-scrollbar-thumb,
+#report-content::-webkit-scrollbar-thumb,
+#quick-results::-webkit-scrollbar-thumb {
+    background: var(--blue-neon);
+    border-radius: 10px;
+}
+
+/* ================= AGRUPAMENTO VISUAL ================= */
+
+.group-header {
+    margin-top: 18px;
+    padding: 10px;
+    background: linear-gradient(90deg, rgba(255,204,0,0.1), transparent);
+    border-left: 4px solid var(--gold);
+    font-weight: 700;
+    letter-spacing: 1px;
+    color: var(--gold);
+    border-radius: 10px;
+}
+
+.validade-header {
+    margin-top: 10px;
+    padding: 6px;
+    background: rgba(0,242,255,0.05);
+    border-left: 3px solid var(--blue-neon);
+    font-size: 0.8rem;
+    color: var(--blue-neon);
+    border-radius: 8px;
+}
+
+        .container { padding: 15px; flex: 1; width: 100%; max-width: 550px; margin: 0 auto; padding-bottom: 110px; }
+
+        .card { 
+            background: var(--card); backdrop-filter: blur(20px); border-radius: 28px; 
+            padding: 22px; margin-bottom: 20px; border: 1px solid var(--border); 
+            box-shadow: 0 15px 35px rgba(0,0,0,0.3); transition: transform 0.2s;
+        }
+
+        .btn { width: 100%; padding: 16px; border: none; border-radius: 18px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 10px; cursor: pointer; transition: 0.2s; text-transform: uppercase; }
+        .btn-gold { background: transparent; border: 2px solid var(--gold); color: var(--gold); }
+        .btn-gold:hover { background: var(--gold); color: #000; box-shadow: var(--shadow-neon); }
+        .btn-blue { background: var(--blue-neon); color: #fff; box-shadow: 0 4px 15px rgba(0,242,255,0.3); }
+        .btn-red { background: transparent; border: 2px solid var(--red-neon); color: var(--red-neon); }
+        .btn-mini { padding: 5px 10px; border-radius: 8px; font-size: 0.8rem; }
+
+        input, select { 
+            width: 100%; padding: 15px; background: rgba(0,0,0,0.2); border: 1.5px solid var(--border); 
+            border-radius: 14px; color: var(--text); margin-top: 10px; font-size: 1rem; outline: none; 
+        }
+        body.light input, body.light select { background: #f9f9f9; color: #000; border-color: #ccc; }
+        input:focus { border-color: var(--blue-neon); box-shadow: 0 0 8px var(--blue-neon); }
+
+        header { padding: 15px 25px; background: rgba(0,0,0,0.4); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+        .logo-b { width: 40px; height: 40px; border-radius: 50%; border: 2px solid var(--gold); box-shadow: 0 0 10px var(--gold); }
+
+        nav { position: fixed; bottom: 0; width: 100%; background: var(--card); display: flex; padding: 12px 0 35px 0; border-top: 1px solid var(--border); z-index: 999; }
+        .nav-item { color: #888; flex: 1; display: flex; flex-direction: column; align-items: center; gap: 5px; font-size: 0.7rem; font-weight: 600; cursor: pointer; }
+        .nav-item.active { color: var(--gold); }
+
+        #scanner { display:none; position:fixed; inset:0; z-index:100000; background:#000; }
+        .hidden { display: none !important; }
+        .dot { width: 20px; height: 20px; border: 2px solid var(--gold); border-radius: 50%; transition: 0.3s; }
+        .blur-value { filter: blur(10px); }
+        
+        .prod-row { 
+            display: flex; justify-content: space-between; align-items:center; 
+            padding: 14px; border-bottom: 1px solid rgba(128,128,128,0.1); cursor: pointer; 
+            transition: background 0.2s;
+        }
+        .prod-row:hover { background: rgba(255, 204, 0, 0.05); }
+        
+        #report-modal { 
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); 
+            z-index: 100001; background: var(--card); padding: 25px; border-radius: 30px; 
+            border: 2px solid var(--gold); width: 92%; max-width: 450px; max-height: 85vh; 
+            display: flex; flex-direction: column; box-shadow: 0 0 50px rgba(0,0,0,0.8);
+        }
+        .report-line { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid rgba(128,128,128,0.2); font-weight: 500; }
+        
+        /* Estilo para itens do carrinho com controles */
+        .cart-item-ui { display: flex; flex-direction: column; gap: 5px; padding: 10px; border-bottom: 1px solid var(--border); }
+        .cart-controls { display: flex; align-items: center; gap: 15px; margin-top: 5px; }
+        .qty-btn { background: var(--gold); color: #000; border: none; width: 25px; height: 25px; border-radius: 5px; font-weight: bold; cursor: pointer; }
+    </style>
+</head>
+<body class="dark">
+
+    <div class="hidden">
+        <audio id="snd-bip" src="bip.mp3"></audio>
+        <audio id="snd-caixa" src="caixa.mp3"></audio>
+        <audio id="snd-erro" src="erro.mp3"></audio>
+        <audio id="snd-alerta" src="alerta.mp3"></audio>
+        <audio id="snd-troca" src="troca.mp3"></audio>
+        <audio id="snd-limpar" src="limpar.mp3"></audio>
+    </div>
+
+    <div id="pinScreen" style="position:fixed; inset:0; background:var(--bg); z-index:99999; display:flex; flex-direction:column; align-items:center; justify-content:center;">
+        <img src="logo.png" style="width:120px; height:120px; border-radius:50%; border:4px solid var(--gold); margin-bottom:25px; box-shadow: 0 0 20px var(--gold);">
+        <h2 style="color:var(--gold); letter-spacing:6px; margin-bottom: 10px;">BRUNOSTOCK</h2>
+        <div id="pin-dots" style="display:flex; gap:18px; margin: 35px 0;">
+            <div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div>
+        </div>
+        <div style="display:grid; grid-template-columns: repeat(3, 75px); gap:22px;">
+            <script>for(let i=1; i<=9; i++) document.write(`<button onclick="typePin('${i}')" class="btn btn-gold" style="border-radius:50%; width:75px; height:75px; font-size:1.5rem;">${i}</button>`);</script>
+            <button onclick="location.reload()" class="btn btn-red" style="border-radius:50%; width:75px; height:75px;"><i class="fa-solid fa-rotate"></i></button>
+            <button onclick="typePin('0')" class="btn btn-gold" style="border-radius:50%; width:75px; height:75px; font-size:1.5rem;">0</button>
+            <button onclick="resetPin()" class="btn btn-blue" style="border-radius:50%; width:75px; height:75px; background:transparent; border:2px solid var(--blue-neon); color:var(--blue-neon);"><i class="fa-solid fa-eraser"></i></button>
+        </div>
+        <small style="margin-top: 50px; color: #666; font-weight: 600; letter-spacing: 1px;">Desenvolvedor Carlos França</small>
+    </div>
+
+    <div id="mainApp" class="hidden">
+        <header>
+            <div style="display:flex; align-items:center; gap:14px;">
+                <img src="logo.png" class="logo-b" onerror="this.src='https://via.placeholder.com/50'">
+                <b style="color:var(--gold); letter-spacing: 1px;">BRUNOSTOCK PRO</b>
+            </div>
+            <div style="display:flex; gap:20px; align-items:center;">
+                <i id="eye-icon" class="fa-solid fa-eye" onclick="togglePrivacy()" style="color:var(--blue-neon); cursor:pointer;"></i>
+                <i class="fa-solid fa-circle-half-stroke" onclick="toggleTheme()" style="color:var(--gold); cursor:pointer;"></i>
+                <i class="fa-solid fa-power-off" onclick="logout()" style="color:var(--red-neon); cursor:pointer;"></i>
+            </div>
+        </header>
+
+        <div class="container">
+            <div id="view-vendas">
+                <div id="venc-box" class="hidden card" style="border-left: 6px solid var(--red-neon); background: rgba(255,0,85,0.05);">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <small style="color:var(--red-neon); font-weight:900;">⚠️ ALERTA DE VALIDADE</small>
+                        <button onclick="muteAlert()" style="background:var(--red-neon); border:none; color:white; border-radius:10px; padding:6px 12px; font-size:0.7rem; cursor:pointer;">CIENTE</button>
+                    </div>
+                    <div id="venc-list" class="scroll-area" style="margin-top:10px; font-size:0.85rem; max-height: 80px;"></div>
+                </div>
+
+                <div class="card" style="text-align:center; position:relative; overflow:hidden;">
+                    <small style="letter-spacing:3px; color: var(--gold); font-weight: 700;">FATURAMENTO HOJE</small>
+                    <h1 id="dash-vendas" class="privacy-target" style="font-size:3.2rem; margin:15px 0; color:var(--text); font-weight: 800;">R$ 0,00</h1>
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px; border-top:1px solid rgba(128,128,128,0.2); padding-top:20px;">
+                        <div><small>LUCRO LÍQUIDO</small><br><b id="dash-lucro" class="privacy-target" style="color:var(--green-neon); font-size:1.2rem;">R$ 0,00</b></div>
+                        <div><small>TOTAL FIADO</small><br><b id="dash-fiado" class="privacy-target" style="color:var(--red-neon); font-size:1.2rem;">R$ 0,00</b></div>
+                    </div>
+                </div>
+
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px;">
+                    <div class="card" style="text-align:center;"><small>USO CASA</small><br><span id="dash-casa" class="privacy-target" style="color:var(--blue-neon); font-weight:bold;">R$ 0,00</span></div>
+                    <div class="card" style="text-align:center;"><small>PERDAS/AVARIAS</small><br><span id="dash-perda" class="privacy-target" style="color:var(--red-neon); font-weight:bold;">R$ 0,00</span></div>
+                </div>
+
+                <div style="text-align: center; margin-top: 10px;">
+                    <small style="color: #666; font-weight: 600;">Sistema de Gestão Profissional</small>
+                </div>
+            </div>
+
+            <div id="view-balcao" class="hidden">
+                <div class="card" style="margin-bottom: 15px;">
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px;">
+                        <button class="btn btn-gold" onclick="openScan('venda')"><i class="fa-solid fa-barcode"></i> BIPAR</button>
+                        <button class="btn btn-red" onclick="openScan('troca')"><i class="fa-solid fa-rotate-left"></i> TROCA</button>
+                    </div>
+                    <input type="text" id="search-balcao" placeholder="🔍 Pesquisar por nome ou EAN..." oninput="quickSearchBalcao(this.value)" style="margin-top:15px;">
+                    <div id="quick-results" class="scroll-area" style="max-height:120px; background:rgba(0,0,0,0.3); border-radius:10px; margin-top:5px;"></div>
+                </div>
+                
+                <div class="card" style="border: 1px solid var(--blue-neon);">
+                    <div id="cart-items" style="min-height:150px; max-height: 220px; margin-bottom:15px;"></div>
+                    <div style="text-align:center; border-top: 1px dashed #555; padding-top: 15px;">
+                        <small style="font-weight:bold;">TOTAL DO CARRINHO</small>
+                        <h2 id="cart-total" style="color:var(--green-neon); font-size:2.8rem; margin:5px 0; font-weight:900;">R$ 0,00</h2>
+                    </div>
+                    <select id="pay-method">
+                        <option value="dinheiro">💵 DINHEIRO / PIX</option>
+                        <option value="cartao">💳 CARTÃO (CRÉD/DÉB)</option>
+                        <option value="fiado">📝 FIADO (CADERNETA)</option>
+                        <option value="casa">🏠 USO CASA (CONSUMO)</option>
+                        <option value="avaria">⚠️ AVARIA / PERDA</option>
+                    </select>
+                    <button class="btn btn-blue" style="margin-top:20px; font-size: 1.1rem;" onclick="closeSale()">FECHAR CAIXA</button>
+                    <button onclick="clearCart()" style="background:none; border:none; color:#777; width:100%; margin-top:15px; cursor:pointer;">LIMPAR TUDO</button>
+                </div>
+            </div>
+
+            <div id="view-estoque" class="hidden">
+                <div class="card">
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                        <button class="btn btn-gold" onclick="openScan('estoque')"><i class="fa-solid fa-camera"></i> EAN</button>
+                        <button class="btn btn-gold" onclick="generateManualCode()" style="border-color: var(--blue-neon); color: var(--blue-neon);">GERAR</button>
+                    </div>
+                    
+                    <input type="text" id="p-ean" placeholder="Código de Barras">
+                    <input type="text" id="p-nome" placeholder="Nome do Produto">
+                    
+                    <div style="display:flex; gap:10px;">
+                        <input type="text" id="p-grupo" placeholder="Categoria">
+                        <input type="text" id="p-area" placeholder="Local">
+                    </div>
+
+                    <div style="display:flex; gap:10px;">
+                        <input type="number" id="p-custo" placeholder="Custo R$">
+                        <input type="number" id="p-venda" placeholder="Venda R$">
+                    </div>
+                    <div style="display:flex; gap:10px;">
+                        <input type="number" id="p-qtd" placeholder="Qtd">
+                        <input type="date" id="p-val">
+                    </div>
+
+                    <div style="margin-top:15px; text-align:center;">
+                        <label class="btn btn-gold" style="font-size: 0.8rem; border-style: dashed; padding: 10px;">
+                            <i class="fa-solid fa-image"></i> TIRAR FOTO
+                            <input type="file" accept="image/*" capture="environment" id="p-img" hidden onchange="compressImg(this)">
+                        </label>
+                        <div id="img-status" style="font-size: 0.7rem; color: var(--green-neon); margin-top:5px;"></div>
+                    </div>
+
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px; margin-top:25px;">
+                        <button class="btn btn-blue" onclick="saveProd()">SALVAR</button>
+                        <button class="btn btn-red" onclick="deleteProd()">EXCLUIR</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div style="display:flex; justify-content:space-between; align-items:center; gap: 10px;">
+                        <b style="color:var(--gold)">LISTA</b>
+                        <input type="text" id="search-inventory" placeholder="Filtrar lista..." oninput="listInventory()" style="margin:0; padding:5px 10px; font-size:0.8rem; flex:1;">
+                        <select id="filter-list" onchange="listInventory()" style="width:auto; margin:0; padding:5px 10px; font-size:0.8rem;">
+                            <option value="todos">TODOS</option>
+                            <option value="validade">VALIDADE</option>
+                            <option value="grupo">CATEGORIA</option>
+                            <option value="falta">FALTANDO</option>
+                        </select>
+                    </div>
+                    <div id="prod-list-container" style="margin-top:15px; max-height: 250px;"></div>
+                </div>
+            </div>
+
+            <div id="view-relatorios" class="hidden">
+                <div class="card">
+                    <h3 style="text-align:center; color:var(--gold); margin-top:0;">CENTRAL DE RELATÓRIOS</h3>
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                        <button class="btn btn-gold" style="font-size:0.75rem;" onclick="generateReport(1)">DIÁRIO</button>
+                        <button class="btn btn-gold" style="font-size:0.75rem;" onclick="generateReport(7)">SEMANAL</button>
+                        <button class="btn btn-gold" style="font-size:0.75rem;" onclick="generateReport(15)">QUINZENAL</button>
+                        <button class="btn btn-gold" style="font-size:0.75rem;" onclick="generateReport(30)">MENSAL</button>
+                        <button class="btn btn-gold" style="font-size:0.75rem;" onclick="generateReport(90)">TRIMESTRAL</button>
+                        <button class="btn btn-gold" style="font-size:0.75rem;" onclick="generateReport(365)">ANUAL</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h4 style="color:var(--blue-neon); margin-top:0;">TESTE DE INTERFACE (ÁUDIO)</h4>
+                    <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:8px;">
+                        <button class="btn btn-gold" style="padding:8px; font-size:0.6rem;" onclick="play('bip')">BIP</button>
+                        <button class="btn btn-gold" style="padding:8px; font-size:0.6rem;" onclick="play('caixa')">CAIXA</button>
+                        <button class="btn btn-gold" style="padding:8px; font-size:0.6rem;" onclick="play('erro')">ERRO</button>
+                        <button class="btn btn-gold" style="padding:8px; font-size:0.6rem;" onclick="play('alerta')">ALERTA</button>
+                        <button class="btn btn-gold" style="padding:8px; font-size:0.6rem;" onclick="play('troca')">TROCA</button>
+                        <button class="btn btn-gold" style="padding:8px; font-size:0.6rem;" onclick="play('limpar')">LIMPAR</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <button class="btn btn-blue" style="margin-bottom:12px;" onclick="exportBackup()"><i class="fa-solid fa-download"></i> EXPORTAR BACKUP</button>
+                    <label class="btn btn-gold" style="font-size: 0.8rem;">
+                        <i class="fa-solid fa-upload"></i> RESTAURAR DADOS
+                        <input type="file" id="import-btn" hidden onchange="importBackup(this)">
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <nav>
+            <div class="nav-item active" onclick="tab('vendas', this)"><i class="fa-solid fa-chart-pie"></i>VENDAS</div>
+            <div class="nav-item" onclick="tab('balcao', this)"><i class="fa-solid fa-cash-register"></i>BALCÃO</div>
+            <div class="nav-item" onclick="tab('estoque', this)"><i class="fa-solid fa-boxes-stacked"></i>ESTOQUE</div>
+            <div class="nav-item" onclick="tab('relatorios', this)"><i class="fa-solid fa-file-pdf"></i>RELS</div>
+        </nav>
+    </div>
+
+    <div id="report-modal" class="hidden">
+        <h3 id="report-title" style="color:var(--gold); margin-top:0;"></h3>
+        <div id="report-content" class="scroll-area" style="flex:1;"></div>
+        <div style="margin-top:20px; display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+            <button class="btn btn-blue" onclick="saveReportPDF()">PDF <i class="fa-solid fa-file-export"></i></button>
+            <button class="btn btn-red" onclick="document.getElementById('report-modal').classList.add('hidden')">FECHAR</button>
+        </div>
+    </div>
+
+    <div id="scanner">
+        <video id="video" style="width:100%; height:100%; object-fit:cover;"></video>
+        <div style="position: absolute; top: 20%; left: 10%; right: 10%; height: 2px; background: red; box-shadow: 0 0 10px red; animation: scanAnim 2s infinite;"></div>
+        <button onclick="stopScan()" style="position:absolute; bottom:50px; left:50%; transform:translateX(-50%); padding:15px 40px; border-radius:40px; background:var(--red-neon); color:white; border:none; font-weight:bold;">SAIR DO SCANNER</button>
+    </div>
+
+    <style> @keyframes scanAnim { 0% {top: 20%;} 50% {top: 80%;} 100% {top: 20%;} } </style>
+
+    <script>
+        /**
+         * BrunoStock Ultimate Neon - Engine Core
+         * Desenvolvido por Carlos França
+         * Versão 6.2 - Estendida e Auditada
+         */
+
+        let db; 
+        let pAcc = ""; 
+        let cart = []; 
+        let alertMuted = false; 
+        let currentImg = "";
+        let currentReportData = null;
+
+        // Inicialização do Banco de Dados IndexedDB
+        const openReq = indexedDB.open("BrunoStock_Ultimate_V6", 1);
+        
+        openReq.onerror = (e) => {
+            console.error("Erro ao abrir IndexedDB:", e);
+            alert("Erro crítico no banco de dados.");
+        };
+
+        openReq.onsuccess = (e) => { 
+            db = e.target.result; 
+            updateDashboard(); 
+            if(localStorage.getItem("br_auth")) login(); 
+        };
+
+        openReq.onupgradeneeded = (e) => {
+            let d = e.target.result;
+            // Tabela de Produtos
+            if (!d.objectStoreNames.contains("products")) {
+                d.createObjectStore("products", {keyPath: "ean"});
+            }
+            // Tabela de Vendas
+            if (!d.objectStoreNames.contains("sales")) {
+                d.createObjectStore("sales", {keyPath: "id", autoIncrement: true});
+            }
+            // Tabela de Logs (Nova funcionalidade de Auditoria)
+            if (!d.objectStoreNames.contains("logs")) {
+                d.createObjectStore("logs", {keyPath: "id", autoIncrement: true});
+            }
+        };
+
+        // Funções de Utilidade Geral
+        function play(s) { 
+            const a = document.getElementById('snd-'+s); 
+            if(a) { 
+                a.currentTime = 0; 
+                a.play().catch(() => {
+                    console.warn("Reprodução de áudio bloqueada pelo navegador.");
+                }); 
+            } 
+        }
+
+        function toggleTheme() { document.body.classList.toggle('light'); }
+
+        function togglePrivacy() { 
+            document.querySelectorAll('.privacy-target').forEach(t => t.classList.toggle('blur-value')); 
+            document.getElementById('eye-icon').classList.toggle('fa-eye-slash'); 
+        }
+
+        function muteAlert() { 
+            alertMuted = true; 
+            document.getElementById('venc-box').classList.add('hidden'); 
+        }
+
+        function resetPin() { 
+            pAcc = ''; 
+            document.querySelectorAll('.dot').forEach(d => d.style.background = 'none'); 
+        }
+
+        function typePin(n) {
+            if(pAcc.length < 4) {
+                pAcc += n; 
+                document.querySelectorAll('.dot')[pAcc.length-1].style.background = "var(--gold)";
+                if(pAcc.length === 4) {
+                    if(pAcc === "7979") login();
+                    else { 
+                        play('erro'); 
+                        resetPin(); 
+                        alert("PIN INCORRETO");
+                    }
+                }
+            }
+        }
+
+        function login() { 
+            localStorage.setItem("br_auth","1"); 
+            document.getElementById('pinScreen').classList.add('hidden'); 
+            document.getElementById('mainApp').classList.remove('hidden'); 
+            listInventory();
+        }
+
+        function logout() { 
+            localStorage.removeItem("br_auth"); 
+            location.reload(); 
+        }
+
+        function tab(t, el) {
+            document.querySelectorAll('.container > div').forEach(v => v.classList.add('hidden'));
+            document.getElementById('view-'+t).classList.remove('hidden');
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            if(el) el.classList.add('active');
+            if(t === 'vendas') updateDashboard();
+            if(t === 'estoque') listInventory();
+        }
+
+        // --- GESTÃO DE ESTOQUE ---
+        function saveProd() {
+            const p = { 
+                ean: document.getElementById('p-ean').value.trim(), 
+                nome: document.getElementById('p-nome').value.trim(), 
+                grupo: document.getElementById('p-grupo').value || 'Geral',
+                area: document.getElementById('p-area').value || 'Loja',
+                custo: parseFloat(document.getElementById('p-custo').value || 0), 
+                venda: parseFloat(document.getElementById('p-venda').value || 0), 
+                qtd: parseInt(document.getElementById('p-qtd').value || 0), 
+                validade: document.getElementById('p-val').value,
+                foto: currentImg 
+            };
+            
+            if(!p.ean || !p.nome) return alert("EAN e Nome são obrigatórios!");
+
+            const tx = db.transaction("products", "readwrite");
+            tx.objectStore("products").put(p);
+            
+            tx.oncomplete = () => {
+                play('bip'); 
+                clearFields(); 
+                listInventory();
+                logAction("Produto Salvo/Editado: " + p.nome);
+            };
+        }
+
+        function deleteProd() {
+            const ean = document.getElementById('p-ean').value;
+            if(!ean) return alert("Selecione um produto para excluir.");
+            if(confirm("Tem certeza que deseja excluir este produto?")) {
+                const tx = db.transaction("products", "readwrite");
+                tx.objectStore("products").delete(ean);
+                tx.oncomplete = () => {
+                    play('limpar');
+                    clearFields();
+                    listInventory();
+                    logAction("Produto Excluído: " + ean);
+                };
+            }
+        }
+
+       function listInventory() {
+    const cont = document.getElementById('prod-list-container');
+    const filter = document.getElementById('filter-list').value;
+    const search = document.getElementById('search-inventory').value.toLowerCase();
+    cont.innerHTML = "";
+
+    db.transaction("products").objectStore("products").getAll().onsuccess = (e) => {
+        let prods = e.target.result;
+
+        if(search) {
+            prods = prods.filter(p => 
+                p.nome.toLowerCase().includes(search) || 
+                p.ean.includes(search)
+            );
+        }
+
+        // Ordenação base
+        prods.sort((a,b)=>a.nome.localeCompare(b.nome));
+
+        // Agrupar por grupo
+        const grupos = {};
+
+        prods.forEach(p => {
+            if(!grupos[p.grupo]) grupos[p.grupo] = [];
+            grupos[p.grupo].push(p);
+        });
+
+        Object.keys(grupos).sort().forEach(grupoNome => {
+
+            const headerGrupo = document.createElement('div');
+            headerGrupo.className = "group-header";
+            headerGrupo.innerHTML = `📦 ${grupoNome.toUpperCase()}`;
+            cont.appendChild(headerGrupo);
+
+            // Ordenar por validade dentro do grupo
+            grupos[grupoNome].sort((a,b)=>{
+                if(!a.validade) return 1;
+                if(!b.validade) return -1;
+                return new Date(a.validade) - new Date(b.validade);
+            });
+
+            let validadeAtual = "";
+
+            grupos[grupoNome].forEach(p => {
+
+                // Separador por validade
+                if(p.validade !== validadeAtual) {
+                    validadeAtual = p.validade;
+
+                    const headerVal = document.createElement('div');
+                    headerVal.className = "validade-header";
+                    headerVal.innerHTML = `📅 ${validadeAtual || "SEM VALIDADE"}`;
+                    cont.appendChild(headerVal);
+                }
+
+                const div = document.createElement('div');
+                div.className = 'prod-row';
+                div.onclick = () => { fillForm(p.ean); tab('estoque'); };
+
+                const statusCor = p.qtd <= 0 
+                    ? 'var(--red-neon)' 
+                    : (p.qtd < 5 ? 'var(--gold)' : 'var(--green-neon)');
+
+                div.innerHTML = `
+                    <div style="min-width:280px;">
+                        <b style="color:${statusCor}">${p.nome}</b><br>
+                        <small>Qtd: ${p.qtd} | EAN: ${p.ean} | Loc: ${p.area}</small>
+                    </div>
+                    <div style="text-align:right; min-width:110px;">
+                        <b style="color:var(--gold)">R$ ${p.venda.toFixed(2)}</b>
+                    </div>
+                `;
+
+                cont.appendChild(div);
+            });
+        });
+    };
+}
+
+        // --- SISTEMA DE BALCÃO E CARRINHO ---
+        function quickSearchBalcao(val) {
+            const resBox = document.getElementById('quick-results');
+            if(val.length < 2) { resBox.innerHTML = ""; return; }
+            
+            db.transaction("products").objectStore("products").getAll().onsuccess = (e) => {
+                const matches = e.target.result.filter(p => p.nome.toLowerCase().includes(val.toLowerCase()) || p.ean.includes(val)).slice(0, 5);
+                resBox.innerHTML = matches.map(p => `
+                    <div class="prod-row" onclick="handleBip('${p.ean}', 1); document.getElementById('quick-results').innerHTML=''; document.getElementById('search-balcao').value=''">
+                        <span>${p.nome}</span>
+                        <b>R$ ${p.venda.toFixed(2)}</b>
+                    </div>
+                `).join('');
+            };
+        }
+
+        function handleBip(ean, mult) {
+            db.transaction("products").objectStore("products").get(ean).onsuccess = (e) => {
+                const p = e.target.result;
+                if(p) {
+                    const existing = cart.find(item => item.ean === ean && (mult > 0 ? item.venda > 0 : item.venda < 0));
+                    if(existing) {
+                        existing.item_qty++;
+                    } else {
+                        cart.push({...p, item_qty: 1, base_venda: p.venda, base_custo: p.custo, venda: p.venda * mult, custo: p.custo * mult});
+                    }
+                    play(mult < 0 ? 'troca' : 'bip'); 
+                    renderCart();
+                } else { 
+                    play('erro'); 
+                    alert("PRODUTO NÃO ENCONTRADO NO SISTEMA!"); 
+                }
+            };
+        }
+
+        function renderCart() {
+            const box = document.getElementById('cart-items'); 
+            box.innerHTML = ""; 
+            let totalGeral = 0;
+
+            cart.forEach((item, index) => {
+                const subtotal = item.venda * item.item_qty;
+                totalGeral += subtotal;
+
+                const div = document.createElement('div');
+                div.className = 'cart-item-ui';
+                div.innerHTML = `
+                    <div style="display:flex; justify-content:space-between;">
+                        <b>${item.nome} ${item.venda < 0 ? '(TROCA)' : ''}</b>
+                        <span>R$ ${subtotal.toFixed(2)}</span>
+                    </div>
+                    <div class="cart-controls">
+                        <button class="qty-btn" onclick="updateQty(${index}, -1)">-</button>
+                        <span>${item.item_qty} un</span>
+                        <button class="qty-btn" onclick="updateQty(${index}, 1)">+</button>
+                        <i class="fa-solid fa-trash-can" onclick="removeFromCart(${index})" style="color:var(--red-neon); margin-left:auto; cursor:pointer;"></i>
+                    </div>
+                `;
+                box.appendChild(div);
+            });
+
+            document.getElementById('cart-total').innerText = "R$ " + Math.abs(totalGeral).toFixed(2);
+        }
+
+        function updateQty(idx, delta) {
+            cart[idx].item_qty += delta;
+            if(cart[idx].item_qty <= 0) cart.splice(idx, 1);
+            renderCart();
+        }
+
+        function removeFromCart(idx) {
+            cart.splice(idx, 1);
+            play('limpar');
+            renderCart();
+        }
+
+        function clearCart() { 
+            if(confirm("Deseja realmente limpar todo o carrinho?")) { 
+                cart = []; 
+                renderCart(); 
+                play('limpar'); 
+            } 
+        }
+
+        function closeSale() {
+            if(!cart.length) return alert("Carrinho vazio!");
+            const method = document.getElementById('pay-method').value;
+            
+            let totalVenda = 0;
+            let totalCusto = 0;
+            
+            cart.forEach(item => {
+                totalVenda += (item.venda * item.item_qty);
+                totalCusto += (item.custo * item.item_qty);
+            });
+
+            const tx = db.transaction(["sales", "products"], "readwrite");
+            
+            tx.objectStore("sales").add({ 
+                date: new Date().toISOString().split('T')[0], 
+                timestamp: new Date().getTime(),
+                total: totalVenda, 
+                custo: totalCusto, 
+                lucro: (totalVenda - totalCusto), 
+                metodo: method,
+                itens: cart.map(i => ({n: i.nome, q: i.item_qty}))
+            });
+
+            cart.forEach(item => {
+                const pStore = tx.objectStore("products");
+                pStore.get(item.ean).onsuccess = (e) => {
+                    let prod = e.target.result;
+                    if(prod) {
+                        // Se venda > 0, subtrai do estoque. Se troca (negativo), devolve ao estoque.
+                        const operacao = item.venda > 0 ? item.item_qty : -item.item_qty;
+                        prod.qtd -= operacao;
+                        pStore.put(prod);
+                    }
+                };
+            });
+
+            tx.oncomplete = () => { 
+                play('caixa'); 
+                logAction(`Venda Finalizada: R$ ${totalVenda.toFixed(2)} (${method})`);
+                cart = []; 
+                renderCart(); 
+                updateDashboard();
+                alert("VENDA CONCLUÍDA COM SUCESSO!");
+            };
+        }
+
+        // --- DASHBOARD E ALERTAS ---
+        function updateDashboard() {
+            const hoje = new Date().toISOString().split('T')[0];
+            let v=0, l=0, f=0, c=0, a=0;
+
+            db.transaction("sales").objectStore("sales").getAll().onsuccess = (e) => {
+                e.target.result.forEach(s => {
+                    if(s.date === hoje) {
+                        if(s.metodo === 'casa') c += s.custo; 
+                        else if(s.metodo === 'avaria') a += Math.abs(s.custo);
+                        else { 
+                            v += s.total; 
+                            l += s.lucro; 
+                            if(s.metodo === 'fiado') f += s.total; 
+                        }
+                    }
+                });
+                document.getElementById('dash-vendas').innerText = "R$ " + v.toLocaleString('pt-BR', {minimumFractionDigits: 2});
+                document.getElementById('dash-lucro').innerText = "R$ " + l.toFixed(2);
+                document.getElementById('dash-fiado').innerText = "R$ " + f.toFixed(2);
+                document.getElementById('dash-casa').innerText = "R$ " + c.toFixed(2);
+                document.getElementById('dash-perda').innerText = "R$ " + a.toFixed(2);
+            };
+
+            // Verificação de Validades Próximas (15 dias)
+            const lv = document.getElementById('venc-list'); 
+            lv.innerHTML = "";
+            db.transaction("products").objectStore("products").getAll().onsuccess = (e) => {
+                let count = 0;
+                const hojeData = new Date();
+                e.target.result.forEach(p => {
+                    if(p.validade) {
+                        const diff = (new Date(p.validade) - hojeData) / (1000 * 60 * 60 * 24);
+                        if(diff <= 15) {
+                            count++;
+                            lv.innerHTML += `<div style="padding:4px 0; border-bottom:1px solid rgba(255,0,0,0.1)">⚠️ ${p.nome} - Vence em: ${p.validade}</div>`;
+                        }
+                    }
+                });
+                if(count > 0 && !alertMuted) { 
+                    document.getElementById('venc-box').classList.remove('hidden'); 
+                    play('alerta'); 
+                }
+            };
+        }
+
+        // --- RELATÓRIOS E AUDITORIA ---
+        function logAction(msg) {
+            const tx = db.transaction("logs", "readwrite");
+            tx.objectStore("logs").add({
+                msg: msg,
+                time: new Date().toLocaleString()
+            });
+        }
+
+        function generateReport(days) {
+            const limit = new Date(); 
+            limit.setDate(new Date().getDate() - days);
+            let totals = { v:0, l:0, f:0, c:0, a:0 };
+            
+            db.transaction("sales").objectStore("sales").getAll().onsuccess = (e) => {
+                const filtered = e.target.result.filter(s => new Date(s.date) >= limit);
+                filtered.forEach(s => {
+                    if(s.metodo === 'casa') totals.c += s.custo;
+                    else if(s.metodo === 'avaria') totals.a += Math.abs(s.custo);
+                    else {
+                        totals.v += s.total; totals.l += s.lucro;
+                        if(s.metodo === 'fiado') totals.f += s.total;
+                    }
+                });
+                
+                currentReportData = { ...totals, days };
+                const labels = { 1:'Diário', 7:'Semanal', 15:'Quinzenal', 30:'Mensal', 90:'Trimestral', 365:'Anual' };
+                document.getElementById('report-title').innerText = "Resumo " + labels[days];
+                document.getElementById('report-content').innerHTML = `
+                    <div class="report-line"><span>Total Bruto:</span><b>R$ ${totals.v.toFixed(2)}</b></div>
+                    <div class="report-line"><span>Lucro Estimado:</span><b style="color:var(--green-neon)">R$ ${totals.l.toFixed(2)}</b></div>
+                    <div class="report-line"><span>Total em Fiado:</span><b style="color:var(--red-neon)">R$ ${totals.f.toFixed(2)}</b></div>
+                    <div class="report-line"><span>Gasto Operacional (Casa):</span><b>R$ ${totals.c.toFixed(2)}</b></div>
+                    <div class="report-line"><span>Prejuízo (Avarias):</span><b>R$ ${totals.a.toFixed(2)}</b></div>
+                    <hr style="border:0; border-top:1px dashed var(--gold); margin: 15px 0;">
+                    <div style="font-size:0.7rem; color:#888;">Relatório gerado automaticamente pelo sistema de auditoria BrunoStock.</div>
+                `;
+                document.getElementById('report-modal').classList.remove('hidden');
+            };
+        }
+
+        async function saveReportPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            const dateStr = new Date().toLocaleString();
+            
+            doc.setFillColor(3, 3, 5);
+            doc.rect(0, 0, 210, 40, 'F');
+            doc.setTextColor(255, 204, 0);
+            doc.setFontSize(22); doc.text("BrunoStock PRO — Relatório", 15, 25);
+            
+            doc.setTextColor(100);
+            doc.setFontSize(10); doc.text("Emissor: Carlos França | Data: " + dateStr, 15, 35);
+            
+            const data = [
+                ["Indicador Financeiro", "Valor Apurado"],
+                ["Total em Vendas (Entrada)", `R$ ${currentReportData.v.toFixed(2)}`],
+                ["Lucro Líquido Real", `R$ ${currentReportData.l.toFixed(2)}`],
+                ["Crédito em Aberto (Fiados)", `R$ ${currentReportData.f.toFixed(2)}`],
+                ["Consumo Administrativo", `R$ ${currentReportData.c.toFixed(2)}`],
+                ["Perdas/Avarias (Prejuízo)", `R$ ${currentReportData.a.toFixed(2)}`]
+            ];
+
+            doc.autoTable({ 
+                head: [data[0]], 
+                body: data.slice(1), 
+                startY: 50, 
+                theme: 'grid',
+                headStyles: { fillColor: [255, 204, 0], textColor: [0, 0, 0] }
+            });
+
+            doc.save(`Relatorio_BrunoStock_${currentReportData.days}_dias.pdf`);
+        }
+
+        // --- FUNÇÕES DO SCANNER ZXING ---
+        const reader = new ZXing.BrowserMultiFormatReader();
+        function openScan(mode) {
+            document.getElementById('scanner').style.display = 'block';
+            reader.decodeFromVideoDevice(null, 'video', (res) => { 
+                if(res) { 
+                    stopScan(); 
+                    if(mode === 'estoque') {
+                        fillForm(res.text);
+                    } else {
+                        handleBip(res.text, mode === 'troca' ? -1 : 1); 
+                    }
+                } 
+            });
+        }
+        function stopScan() { 
+            reader.reset(); 
+            document.getElementById('scanner').style.display = 'none'; 
+        }
+
+        // --- AUXILIARES TÉCNICOS ---
+        function fillForm(ean) {
+            db.transaction("products").objectStore("products").get(ean).onsuccess = (e) => {
+                const p = e.target.result;
+                if(p) {
+                    ['ean','nome','custo','venda','qtd','val','grupo','area'].forEach(f => {
+                        const el = document.getElementById('p-'+f);
+                        if(el) el.value = p[f] || (f==='val'?'':"");
+                    });
+                    currentImg = p.foto || "";
+                    document.getElementById('img-status').innerText = currentImg ? "📸 Foto Carregada" : "";
+                } else {
+                    document.getElementById('p-ean').value = ean;
+                }
+            };
+        }
+
+        function generateManualCode() { 
+            const code = "INT" + Date.now().toString().slice(-6);
+            document.getElementById('p-ean').value = code; 
+        }
+
+        function clearFields() { 
+            ['p-ean','p-nome','p-custo','p-venda','p-qtd','p-val','p-grupo','p-area'].forEach(id => {
+                const el = document.getElementById(id);
+                if(el) el.value = "";
+            });
+            currentImg = ""; 
+            document.getElementById('img-status').innerText = "";
+        }
+
+        function compressImg(input) {
+            const file = input.files[0]; 
+            if(!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const img = new Image();
+                img.src = e.target.result;
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    const maxW = 400;
+                    const scale = maxW / img.width;
+                    canvas.width = maxW;
+                    canvas.height = img.height * scale;
+                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                    currentImg = canvas.toDataURL('image/jpeg', 0.7);
+                    document.getElementById('img-status').innerText = "✅ Foto Processada";
+                };
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // --- BACKUP E RESTAURAÇÃO ---
+        function exportBackup() {
+            const backup = { products: [], sales: [], logs: [] };
+            const tx = db.transaction(["products", "sales", "logs"], "readonly");
+            
+            tx.objectStore("products").getAll().onsuccess = (e) => backup.products = e.target.result;
+            tx.objectStore("sales").getAll().onsuccess = (e) => backup.sales = e.target.result;
+            tx.objectStore("logs").getAll().onsuccess = (e) => backup.logs = e.target.result;
+
+            tx.oncomplete = () => {
+                const blob = new Blob([JSON.stringify(backup)], {type: "application/json"});
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `BrunoStock_Backup_${new Date().toISOString().split('T')[0]}.json`;
+                a.click();
+                logAction("Backup Exportado");
+            };
+        }
+
+        function importBackup(input) {
+            const file = input.files[0];
+            if(!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    const tx = db.transaction(["products", "sales"], "readwrite");
+                    if(data.products) data.products.forEach(p => tx.objectStore("products").put(p));
+                    if(data.sales) data.sales.forEach(s => tx.objectStore("sales").put(s));
+                    tx.oncomplete = () => {
+                        alert("DADOS RESTAURADOS COM SUCESSO!");
+                        location.reload();
+                    };
+                } catch(err) {
+                    alert("Erro ao ler arquivo de backup.");
+                }
+            };
+            reader.readAsDataURL(file);
+        }
+    </script>
+</body>
+</html>
