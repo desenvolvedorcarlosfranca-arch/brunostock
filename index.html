@@ -624,6 +624,24 @@ display:flex; align-items:center; justify-content:center; z-index:100002;">
 </div>
     <div id="scanner">
         <video id="video" style="width:100%; height:100%; object-fit:cover;"></video>
+<button id="nextScanBtn"
+style="position:absolute;
+top:50%;
+left:50%;
+transform:translate(-50%, -50%);
+padding:18px 45px;
+border-radius:50px;
+background:var(--blue-neon);
+color:white;
+border:none;
+font-weight:900;
+font-size:1.1rem;
+display:none;
+z-index:100001;
+box-shadow:0 0 25px var(--blue-neon);"
+onclick="activateNextScan()">
+PRÓXIMO PRODUTO
+</button>
         <div style="position: absolute; top: 20%; left: 10%; right: 10%; height: 2px; background: red; box-shadow: 0 0 10px red; animation: scanAnim 2s infinite;"></div>
         <button onclick="stopScan()" style="position:absolute; bottom:50px; left:50%; transform:translateX(-50%); padding:15px 40px; border-radius:40px; background:var(--red-neon); color:white; border:none; font-weight:bold;">SAIR DO SCANNER</button>
     </div>
@@ -645,6 +663,8 @@ display:flex; align-items:center; justify-content:center; z-index:100002;">
         let currentReportData = null;
         let simulationMode = false; // Modo oculto de simulação
         let produtoPesoTemp = null;
+let scanLocked = false;
+let lastScannedCode = null;
 
         // Inicialização do Banco de Dados IndexedDB
         const openReq = indexedDB.open("BrunoStock_Ultimate_V6", 2);
@@ -1198,11 +1218,19 @@ if(simulationMode) {
 
         // --- FUNÇÕES DO SCANNER ZXING ---
         const reader = new ZXing.BrowserMultiFormatReader();
-        function openScan(mode) {
+       function openScan(mode) {
     document.getElementById('scanner').style.display = 'block';
+    document.getElementById('nextScanBtn').style.display = 'none';
+    scanLocked = false;
+    lastScannedCode = null;
 
     reader.decodeFromVideoDevice(null, 'video', (res) => {
-        if(res) {
+
+        if(res && !scanLocked) {
+
+            scanLocked = true;
+            lastScannedCode = res.text;
+
             if(mode === 'estoque') {
                 fillForm(res.text);
             } else {
@@ -1211,16 +1239,22 @@ if(simulationMode) {
 
             play('bip');
 
-            // Pequeno delay para evitar leitura duplicada imediata
-            setTimeout(() => {}, 800);
+            // Mostrar botão PRÓXIMO
+            document.getElementById('nextScanBtn').style.display = 'block';
         }
     });
 }
-        function stopScan() { 
-            reader.reset(); 
-            document.getElementById('scanner').style.display = 'none'; 
-        }
-
+        function stopScan() {
+    reader.reset();
+    scanLocked = false;
+    lastScannedCode = null;
+    document.getElementById('nextScanBtn').style.display = 'none';
+    document.getElementById('scanner').style.display = 'none';
+}
+function activateNextScan() {
+    scanLocked = false;
+    document.getElementById('nextScanBtn').style.display = 'none';
+}
         // --- AUXILIARES TÉCNICOS ---
         function fillForm(ean) {
             db.transaction("products").objectStore("products").get(ean).onsuccess = (e) => {
