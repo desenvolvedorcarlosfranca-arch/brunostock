@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
     <title>BrunoStock — Ultimate Neon Ultimate</title>
     
     <script src="https://unpkg.com/@zxing/library@latest"></script>
@@ -11,8 +11,17 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
     <style>
-html {
+
+html, body {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
     font-size: 16px;
+}
+
+* {
+    box-sizing: border-box;
+    max-width: 100%;
 }
         :root {
     --bg: radial-gradient(circle at top, #001a26, #000814 70%);
@@ -38,10 +47,9 @@ html {
     min-height: 100vh;
     overflow-x: hidden;
     overflow-y: auto;
-    display: flex;
-    flex-direction: column;
     transition: 0.4s ease;
 }
+
 body.light {
     --bg: #f2f5f9;
     --card: #ffffff;
@@ -123,12 +131,11 @@ body.light .card {
 }
 
         .container {
+    width: 100%;
+    max-width: 1100px;
+    margin: 0 auto;
     padding: 12px;
-    flex: 1; 
-    width: 100%; 
-    max-width: 1100px; 
-    margin: 0 auto; 
-    padding-bottom: 140px; 
+    padding-bottom: 140px;
 }
 
         .card { 
@@ -203,12 +210,22 @@ body.light .card {
         .dot { width: 20px; height: 20px; border: 2px solid var(--gold); border-radius: 50%; transition: 0.3s; }
         .blur-value { filter: blur(10px); }
         
-        .prod-row { 
-            display: flex; justify-content: space-between; align-items:center; 
-            padding: 14px; border-bottom: 1px solid rgba(128,128,128,0.1); cursor: pointer; 
-            transition: background 0.2s;
-        }
-        .prod-row:hover { background: rgba(255, 204, 0, 0.05); }
+        .prod-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px;
+    border-bottom: 1px solid rgba(128,128,128,0.1);
+    cursor: pointer;
+    transition: background 0.2s;
+    flex-wrap: nowrap;
+    gap: 10px;
+}
+
+.prod-row > div {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
         
         #report-modal { 
             position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); 
@@ -297,8 +314,7 @@ body.light .card {
 
     <div id="pinScreen"
 style="position:fixed;
-top:0;
-left:0;
+inset:0;
 width:100%;
 height:100vh;
 background: radial-gradient(circle at top, #002b3a, #000814 70%);
@@ -316,17 +332,18 @@ overflow:hidden;">
             z-index:1;
             text-align:center;
             width:100%;
-            max-width:380px;
-            margin:0 auto;
-            padding:25px 20px;
+            max-width:360px;
+            padding:15px;
             display:flex;
             flex-direction:column;
-            justify-content:center;">
+            justify-content:space-between;
+            align-items:center;
+            height:100%;">
 
         <img src="logo.png"
-        style="width:120px; height:120px; border-radius:50%;
-        border:4px solid var(--gold); margin-bottom:25px;
-        box-shadow:0 0 25px var(--gold);">
+style="width:120px; height:120px; border-radius:50%;
+border:4px solid var(--gold); margin-bottom:0px;
+box-shadow:0 0 25px var(--gold);">
 
         <h2 style="color:var(--gold);
         letter-spacing:6px; margin-bottom:10px;">
@@ -338,7 +355,7 @@ style="display:flex;
 justify-content:center;
 align-items:center;
 gap:18px;
-margin:35px auto;
+margin:10px auto 100 auto;
 width:100%;">
             <div class="dot"></div>
             <div class="dot"></div>
@@ -347,17 +364,17 @@ width:100%;">
         </div>
 
       <div style="display:grid;
-grid-template-columns:repeat(3, minmax(70px, 22vw));
-gap:4vw;
+grid-template-columns:repeat(3, minmax(60px, 18vw));
+gap:15px;
 justify-content:center;
-max-width:320px;
-margin:25px auto 0 auto;">
+max-width:50px;
+margin:15px auto 0 auto;">
 
 <script>
 for(let i=1;i<=9;i++){
     document.write(
         '<button onclick="typePin(\''+i+'\')" class="btn btn-gold" ' +
-        'style="border-radius:50%;width:100%;aspect-ratio:1/1;font-size:clamp(1.2rem,4vw,1.6rem);">' +
+        'style="border-radius:50%;width:100%;aspect-ratio:1/1;font-size:clamp(1rem,3vw,1.3rem);">' +
         i +
         '</button>'
     );
@@ -375,7 +392,7 @@ class="btn btn-gold"
 style="border-radius:50%;
        width:100%;
        aspect-ratio:1/1;
-       font-size:clamp(1.2rem,4vw,1.6rem);">
+       font-size:clamp(1rem,3vw,1.3rem);">
 0
 </button>
 
@@ -393,7 +410,7 @@ style="border-radius:50%;
 </div>
 
         <small id="pin-copyright"
-        style="margin-top:50px; display:block;
+        style="margin-top:15px;
         color:#777; font-size:0.7rem;"></small>
 
     </div>
@@ -854,11 +871,11 @@ if(pAcc.length >= 12) {
                     : (p.qtd < 5 ? 'var(--gold)' : 'var(--green-neon)');
 
                 div.innerHTML = `
-                    <div style="min-width:280px;">
+                    <div style="flex:1; min-width:0;">
                         <b style="color:${statusCor}">${p.nome}</b><br>
                         <small>Qtd: ${p.qtd} | EAN: ${p.ean} | Loc: ${p.area}</small>
                     </div>
-                    <div style="text-align:right; min-width:110px;">
+                    <div style="text-align:right; width:110px; flex-shrink:0;">
                         <b style="color:var(--gold)">R$ ${p.venda.toFixed(2)}</b>
                     </div>
                 `;
