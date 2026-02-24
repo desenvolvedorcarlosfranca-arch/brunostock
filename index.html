@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BrunoStock — Ultimate Neon Ultimate</title>
     
     <script src="https://unpkg.com/@zxing/library@latest"></script>
@@ -11,27 +11,56 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
     <style>
+html {
+    font-size: 16px;
+}
         :root {
-            --bg: #030305; --card: rgba(22, 22, 28, 0.95); --gold: #ffcc00; --text: #f0f0f0;
-            --blue-neon: #00f2ff; --red-neon: #ff0055; --green-neon: #39ff14; --border: rgba(255, 204, 0, 0.15);
-            --shadow-neon: 0 0 15px rgba(255, 204, 0, 0.3);
-        }
-        body.light {
-            --bg: #eef2f5; --card: #ffffff; --gold: #a67c00; --text: #222222;
-            --blue-neon: #0056b3; --red-neon: #d00000; --green-neon: #1b852e; --border: rgba(0, 0, 0, 0.1);
-        }
+    --bg: radial-gradient(circle at top, #001a26, #000814 70%);
+    --card: rgba(8, 25, 40, 0.95);
+    --gold: #d4af37;
+    --gold-soft: #f1d27a;
+    --ocean: #0077b6;
+    --ocean-light: #00b4d8;
+    --ocean-deep: #023e8a;
+    --text: #f5f9ff;
+    --border: rgba(212, 175, 55, 0.15);
+    --shadow-gold: 0 0 25px rgba(212,175,55,0.4);
+--blue-neon: var(--ocean-light);
+--red-neon: #c1121f;
+--green-neon: #00c853;
+}
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; font-family: 'Segoe UI', Roboto, sans-serif; }
-        body { 
-    margin: 0; 
-    background-color: var(--bg); 
-    color: var(--text); 
+       body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
     min-height: 100vh;
     overflow-x: hidden;
-    overflow-y: auto; 
-    display: flex; 
-    flex-direction: column; 
-    transition: 0.3s ease; 
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    transition: 0.4s ease;
+}
+body.light {
+    --bg: #f2f5f9;
+    --card: #ffffff;
+    --text: #111;
+    --border: #ddd;
+    --gold: #b68c00;
+    --blue-neon: #0077b6;
+}
+
+body.light header {
+    background: #ffffff;
+}
+
+body.light nav {
+    background: #ffffff;
+}
+
+body.light .card {
+    box-shadow: 0 8px 20px rgba(0,0,0,0.08);
 }
         /* Barra de rolagem customizada para manter a estética Neon */
         .container, .scroll-area, #prod-list-container, #cart-items { 
@@ -93,8 +122,8 @@
     border-radius: 8px;
 }
 
-        .container { 
-    padding: 18px; 
+        .container {
+    padding: 12px;
     flex: 1; 
     width: 100%; 
     max-width: 1100px; 
@@ -108,11 +137,51 @@
             box-shadow: 0 15px 35px rgba(0,0,0,0.3); transition: transform 0.2s;
         }
 
-        .btn { width: 100%; padding: 16px; border: none; border-radius: 18px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 10px; cursor: pointer; transition: 0.2s; text-transform: uppercase; }
-        .btn-gold { background: transparent; border: 2px solid var(--gold); color: var(--gold); }
-        .btn-gold:hover { background: var(--gold); color: #000; box-shadow: var(--shadow-neon); }
-        .btn-blue { background: var(--blue-neon); color: #fff; box-shadow: 0 4px 15px rgba(0,242,255,0.3); }
-        .btn-red { background: transparent; border: 2px solid var(--red-neon); color: var(--red-neon); }
+        .btn { 
+    width: 100%; 
+    padding: 16px; 
+    border: none; 
+    border-radius: 18px; 
+    font-weight: 700; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    gap: 10px; 
+    cursor: pointer; 
+    transition: 0.3s ease; 
+    text-transform: uppercase; 
+}
+
+/* OURO LUXO */
+.btn-gold { 
+    background: linear-gradient(135deg, var(--gold), var(--gold-soft));
+    color: #000;
+    box-shadow: 0 0 20px rgba(212,175,55,0.4);
+}
+
+.btn-gold:hover { 
+    transform: translateY(-2px);
+    box-shadow: 0 0 30px rgba(212,175,55,0.6);
+}
+
+/* AZUL OCEANO PREMIUM */
+.btn-blue { 
+    background: linear-gradient(135deg, var(--ocean-light), var(--ocean));
+    color: white;
+    box-shadow: 0 0 20px rgba(0,180,216,0.4);
+}
+
+.btn-blue:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0 30px rgba(0,180,216,0.6);
+}
+
+/* VERMELHO PROFISSIONAL */
+.btn-red { 
+    background: linear-gradient(135deg, #8b0000, #c1121f);
+    color: white;
+    box-shadow: 0 0 15px rgba(193,18,31,0.4);
+}
         .btn-mini { padding: 5px 10px; border-radius: 8px; font-size: 0.8rem; }
 
         input, select { 
@@ -226,22 +295,73 @@
         <audio id="snd-limpar" src="limpar.mp3"></audio>
     </div>
 
-    <div id="pinScreen" style="position:fixed; inset:0; background:var(--bg); z-index:99999; display:flex; flex-direction:column; align-items:center; justify-content:center;">
-        <img src="logo.png" style="width:120px; height:120px; border-radius:50%; border:4px solid var(--gold); margin-bottom:25px; box-shadow: 0 0 20px var(--gold);">
-        <h2 style="color:var(--gold); letter-spacing:6px; margin-bottom: 10px;">BRUNOSTOCK</h2>
-        <div id="pin-dots" style="display:flex; gap:18px; margin: 35px 0;">
-            <div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div>
+    <div id="pinScreen"
+style="position:fixed; inset:0;
+background: radial-gradient(circle at top, #002b3a, #000814 70%);
+z-index:99999; display:flex; flex-direction:column;
+align-items:center; justify-content:center; overflow:hidden;">
+
+    <!-- FUNDO ANIMADO -->
+    <canvas id="goldParticles"
+    style="position:absolute; inset:0; z-index:0;"></canvas>
+
+    <!-- CONTEÚDO -->
+    <div style="position:relative; z-index:1; text-align:center;">
+
+        <img src="logo.png"
+        style="width:120px; height:120px; border-radius:50%;
+        border:4px solid var(--gold); margin-bottom:25px;
+        box-shadow:0 0 25px var(--gold);">
+
+        <h2 style="color:var(--gold);
+        letter-spacing:6px; margin-bottom:10px;">
+        BRUNOSTOCK
+        </h2>
+
+        <div id="pin-dots"
+        style="display:flex; gap:18px; margin:35px 0;">
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
         </div>
-        <div style="display:grid; grid-template-columns: repeat(3, 75px); gap:22px;">
-            <script>for(let i=1; i<=9; i++) document.write(`<button onclick="typePin('${i}')" class="btn btn-gold" style="border-radius:50%; width:75px; height:75px; font-size:1.5rem;">${i}</button>`);</script>
-            <button onclick="location.reload()" class="btn btn-red" style="border-radius:50%; width:75px; height:75px;"><i class="fa-solid fa-rotate"></i></button>
-            <button onclick="typePin('0')" class="btn btn-gold" style="border-radius:50%; width:75px; height:75px; font-size:1.5rem;">0</button>
-            <button onclick="resetPin()" class="btn btn-blue" style="border-radius:50%; width:75px; height:75px; background:transparent; border:2px solid var(--blue-neon); color:var(--blue-neon);"><i class="fa-solid fa-eraser"></i></button>
+
+        <div style="display:grid;
+        grid-template-columns:repeat(3,75px);
+        gap:22px; justify-content:center;">
+            <script>
+                for(let i=1;i<=9;i++)
+                document.write(`<button onclick="typePin('${i}')"
+                class="btn btn-gold"
+                style="border-radius:50%; width:75px;
+                height:75px; font-size:1.5rem;">${i}</button>`);
+            </script>
+
+            <button onclick="location.reload()"
+            class="btn btn-red"
+            style="border-radius:50%; width:75px; height:75px;">
+            <i class="fa-solid fa-rotate"></i></button>
+
+            <button onclick="typePin('0')"
+            class="btn btn-gold"
+            style="border-radius:50%; width:75px;
+            height:75px; font-size:1.5rem;">0</button>
+
+            <button onclick="resetPin()"
+            class="btn btn-blue"
+            style="border-radius:50%; width:75px; height:75px;
+            background:transparent;
+            border:2px solid var(--blue-neon);
+            color:var(--blue-neon);">
+            <i class="fa-solid fa-eraser"></i></button>
         </div>
-       <small id="pin-copyright"
-       style="margin-top:50px; color:#666; font-weight:600; letter-spacing:1px; font-size:0.7rem;">
-</small>
+
+        <small id="pin-copyright"
+        style="margin-top:50px; display:block;
+        color:#777; font-size:0.7rem;"></small>
+
     </div>
+</div>
 
     <div id="mainApp" class="hidden">
         <header>
@@ -273,6 +393,12 @@
                         <div><small>LUCRO LÍQUIDO</small><br><b id="dash-lucro" class="privacy-target" style="color:var(--green-neon); font-size:1.2rem;">R$ 0,00</b></div>
                         <div><small>TOTAL FIADO</small><br><b id="dash-fiado" class="privacy-target" style="color:var(--red-neon); font-size:1.2rem;">R$ 0,00</b></div>
                     </div>
+<div class="card">
+    <small style="color:var(--gold); font-weight:700;">CAIXA DE ENTRADA DO DIA</small>
+    <input type="number" id="cash-start" placeholder="Digite o valor inicial em R$">
+    <button class="btn btn-gold" style="margin-top:10px;" onclick="saveCashStart()">SALVAR CAIXA</button>
+    <div id="cash-status" style="margin-top:8px; font-size:0.8rem; color:var(--green-neon);"></div>
+</div>
                 </div>
 
                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px;">
@@ -333,9 +459,14 @@
                         <input type="number" id="p-venda" placeholder="Venda R$">
                     </div>
                     <div style="display:flex; gap:10px;">
-                        <input type="number" id="p-qtd" placeholder="Qtd">
-                        <input type="date" id="p-val">
-                    </div>
+    <input type="number" id="p-qtd" placeholder="Qtd">
+    <input type="date" id="p-val">
+</div>
+
+<select id="p-tipo" style="margin-top:10px;">
+    <option value="un">Unidade</option>
+    <option value="kg">Por Peso (kg)</option>
+</select>
 
                     <div style="margin-top:15px; text-align:center;">
                         <label class="btn btn-gold" style="font-size: 0.8rem; border-style: dashed; padding: 10px;">
@@ -417,7 +548,27 @@
             <button class="btn btn-red" onclick="document.getElementById('report-modal').classList.add('hidden')">FECHAR</button>
         </div>
     </div>
+<!-- MODAL PESO PROFISSIONAL -->
+<div id="peso-modal" class="hidden" 
+style="position:fixed; inset:0; background:rgba(0,0,0,0.7); 
+display:flex; align-items:center; justify-content:center; z-index:100002;">
 
+    <div style="background:var(--card); padding:30px; border-radius:25px; 
+    border:2px solid var(--gold); width:90%; max-width:400px; text-align:center;">
+
+        <h3 style="color:var(--gold); margin-top:0;">PRODUTO POR PESO</h3>
+        <div id="peso-prod-nome" style="margin-bottom:15px; font-weight:700;"></div>
+
+        <input type="number" step="0.001" id="peso-input" 
+        placeholder="Digite o peso em KG (ex: 0.150)" 
+        style="text-align:center; font-size:1.2rem;">
+
+        <div style="margin-top:20px; display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+            <button class="btn btn-blue" onclick="confirmPeso()">CONFIRMAR</button>
+            <button class="btn btn-red" onclick="cancelPeso()">CANCELAR</button>
+        </div>
+    </div>
+</div>
     <div id="scanner">
         <video id="video" style="width:100%; height:100%; object-fit:cover;"></video>
         <div style="position: absolute; top: 20%; left: 10%; right: 10%; height: 2px; background: red; box-shadow: 0 0 10px red; animation: scanAnim 2s infinite;"></div>
@@ -440,9 +591,10 @@
         let currentImg = "";
         let currentReportData = null;
         let simulationMode = false; // Modo oculto de simulação
+        let produtoPesoTemp = null;
 
         // Inicialização do Banco de Dados IndexedDB
-        const openReq = indexedDB.open("BrunoStock_Ultimate_V6", 1);
+        const openReq = indexedDB.open("BrunoStock_Ultimate_V6", 2);
         
         openReq.onerror = (e) => {
             console.error("Erro ao abrir IndexedDB:", e);
@@ -456,20 +608,32 @@
         };
 
         openReq.onupgradeneeded = (e) => {
-            let d = e.target.result;
-            // Tabela de Produtos
-            if (!d.objectStoreNames.contains("products")) {
-                d.createObjectStore("products", {keyPath: "ean"});
-            }
-            // Tabela de Vendas
-            if (!d.objectStoreNames.contains("sales")) {
-                d.createObjectStore("sales", {keyPath: "id", autoIncrement: true});
-            }
-            // Tabela de Logs (Nova funcionalidade de Auditoria)
-            if (!d.objectStoreNames.contains("logs")) {
-                d.createObjectStore("logs", {keyPath: "id", autoIncrement: true});
-            }
-        };
+    let d = e.target.result;
+
+    // Tabela de Produtos
+    if (!d.objectStoreNames.contains("products")) {
+        d.createObjectStore("products", { keyPath: "ean" });
+    }
+
+    // Tabela de Vendas
+    if (!d.objectStoreNames.contains("sales")) {
+        d.createObjectStore("sales", { keyPath: "id", autoIncrement: true });
+    }
+
+    // Tabela de Logs
+    if (!d.objectStoreNames.contains("logs")) {
+        d.createObjectStore("logs", { keyPath: "id", autoIncrement: true });
+    }
+
+    // Tabela de Vales
+    if (!d.objectStoreNames.contains("vouchers")) {
+        d.createObjectStore("vouchers", { keyPath: "id", autoIncrement: true });
+    }
+    // Tabela de Caixa Diário
+    if (!d.objectStoreNames.contains("cashflow")) {
+    d.createObjectStore("cashflow", { keyPath: "date" });
+    }
+};
 
         // Funções de Utilidade Geral
         function play(s) { 
@@ -550,16 +714,17 @@ if(pAcc.length >= 12) {
         // --- GESTÃO DE ESTOQUE ---
         function saveProd() {
             const p = { 
-                ean: document.getElementById('p-ean').value.trim(), 
-                nome: document.getElementById('p-nome').value.trim(), 
-                grupo: document.getElementById('p-grupo').value || 'Geral',
-                area: document.getElementById('p-area').value || 'Loja',
-                custo: parseFloat(document.getElementById('p-custo').value || 0), 
-                venda: parseFloat(document.getElementById('p-venda').value || 0), 
-                qtd: parseInt(document.getElementById('p-qtd').value || 0), 
-                validade: document.getElementById('p-val').value,
-                foto: currentImg 
-            };
+    ean: document.getElementById('p-ean').value.trim(), 
+    nome: document.getElementById('p-nome').value.trim(), 
+    grupo: document.getElementById('p-grupo').value || 'Geral',
+    area: document.getElementById('p-area').value || 'Loja',
+    custo: parseFloat(document.getElementById('p-custo').value || 0), 
+    venda: parseFloat(document.getElementById('p-venda').value || 0), 
+    qtd: parseFloat(document.getElementById('p-qtd').value || 0),
+    validade: document.getElementById('p-val').value,
+    tipo: document.getElementById('p-tipo').value,
+    foto: currentImg 
+};
             
             if(!p.ean || !p.nome) return alert("EAN e Nome são obrigatórios!");
 
@@ -688,6 +853,15 @@ if(pAcc.length >= 12) {
             db.transaction("products").objectStore("products").get(ean).onsuccess = (e) => {
                 const p = e.target.result;
                 if(p) {
+// Se for produto por peso
+if(p.tipo === "kg") {
+    produtoPesoTemp = { produto: p, mult: mult };
+    document.getElementById("peso-prod-nome").innerText = p.nome + " - R$ " + p.venda.toFixed(2) + " /kg";
+    document.getElementById("peso-input").value = "";
+    document.getElementById("peso-modal").classList.remove("hidden");
+    document.getElementById("peso-input").focus();
+    return;
+}
                     const existing = cart.find(item => item.ean === ean && (mult > 0 ? item.venda > 0 : item.venda < 0));
                     if(existing) {
                         existing.item_qty++;
@@ -721,7 +895,7 @@ if(pAcc.length >= 12) {
                     </div>
                     <div class="cart-controls">
                         <button class="qty-btn" onclick="updateQty(${index}, -1)">-</button>
-                        <span>${item.item_qty} un</span>
+                        <span>${item.tipo === 'kg' ? item.item_qty + ' kg' : item.item_qty + ' un'}</span>
                         <button class="qty-btn" onclick="updateQty(${index}, 1)">+</button>
                         <i class="fa-solid fa-trash-can" onclick="removeFromCart(${index})" style="color:var(--red-neon); margin-left:auto; cursor:pointer;"></i>
                     </div>
@@ -809,8 +983,17 @@ if(simulationMode) {
 
         // --- DASHBOARD E ALERTAS ---
         function updateDashboard() {
-            const hoje = new Date().toISOString().split('T')[0];
-            let v=0, l=0, f=0, c=0, a=0;
+    const hoje = new Date().toISOString().split('T')[0];
+
+    // 🔽 CARREGAR CAIXA INICIAL DO DIA
+    db.transaction("cashflow").objectStore("cashflow").get(hoje).onsuccess = (e) => {
+        if(e.target.result) {
+            document.getElementById("cash-start").value = e.target.result.valor;
+            document.getElementById("cash-status").innerText = "Caixa carregado automaticamente.";
+        }
+    };
+
+    let v=0, l=0, f=0, c=0, a=0;
 
             db.transaction("sales").objectStore("sales").getAll().onsuccess = (e) => {
                 e.target.result.forEach(s => {
@@ -866,33 +1049,44 @@ if(simulationMode) {
             const limit = new Date(); 
             limit.setDate(new Date().getDate() - days);
             let totals = { v:0, l:0, f:0, c:0, a:0 };
-            
-            db.transaction("sales").objectStore("sales").getAll().onsuccess = (e) => {
-                const filtered = e.target.result.filter(s => new Date(s.date) >= limit);
-                filtered.forEach(s => {
-                    if(s.metodo === 'casa') totals.c += s.custo;
-                    else if(s.metodo === 'avaria') totals.a += Math.abs(s.custo);
-                    else {
-                        totals.v += s.total; totals.l += s.lucro;
-                        if(s.metodo === 'fiado') totals.f += s.total;
-                    }
-                });
-                
-                currentReportData = { ...totals, days };
-                const labels = { 1:'Diário', 7:'Semanal', 15:'Quinzenal', 30:'Mensal', 90:'Trimestral', 365:'Anual' };
-                document.getElementById('report-title').innerText = "Resumo " + labels[days];
-                document.getElementById('report-content').innerHTML = `
-                    <div class="report-line"><span>Total Bruto:</span><b>R$ ${totals.v.toFixed(2)}</b></div>
-                    <div class="report-line"><span>Lucro Estimado:</span><b style="color:var(--green-neon)">R$ ${totals.l.toFixed(2)}</b></div>
-                    <div class="report-line"><span>Total em Fiado:</span><b style="color:var(--red-neon)">R$ ${totals.f.toFixed(2)}</b></div>
-                    <div class="report-line"><span>Gasto Operacional (Casa):</span><b>R$ ${totals.c.toFixed(2)}</b></div>
-                    <div class="report-line"><span>Prejuízo (Avarias):</span><b>R$ ${totals.a.toFixed(2)}</b></div>
-                    <hr style="border:0; border-top:1px dashed var(--gold); margin: 15px 0;">
-                    <div style="font-size:0.7rem; color:#888;">Relatório gerado automaticamente pelo sistema de auditoria BrunoStock.</div>
-                `;
-                document.getElementById('report-modal').classList.remove('hidden');
-            };
+            let caixaInicial = 0;
+           db.transaction("cashflow").objectStore("cashflow").getAll().onsuccess = (ev) => {
+
+    ev.target.result.forEach(c => {
+        if(new Date(c.date) >= limit) {
+            caixaInicial += c.valor;
         }
+    });
+
+    currentReportData = { ...totals, caixaInicial, days };
+
+    const labels = {
+        1:'Diário',
+        7:'Semanal',
+        15:'Quinzenal',
+        30:'Mensal',
+        90:'Trimestral',
+        365:'Anual'
+    };
+
+    document.getElementById('report-title').innerText =
+        "Resumo " + labels[days];
+
+    document.getElementById('report-content').innerHTML = `
+        <div class="report-line"><span>Caixa Inicial:</span><b>R$ ${caixaInicial.toFixed(2)}</b></div>
+        <div class="report-line"><span>Total Bruto:</span><b>R$ ${totals.v.toFixed(2)}</b></div>
+        <div class="report-line"><span>Lucro Estimado:</span><b style="color:var(--green-neon)">R$ ${totals.l.toFixed(2)}</b></div>
+        <div class="report-line"><span>Total em Fiado:</span><b style="color:var(--red-neon)">R$ ${totals.f.toFixed(2)}</b></div>
+        <div class="report-line"><span>Gasto Operacional (Casa):</span><b>R$ ${totals.c.toFixed(2)}</b></div>
+        <div class="report-line"><span>Prejuízo (Avarias):</span><b>R$ ${totals.a.toFixed(2)}</b></div>
+        <hr style="border:0; border-top:1px dashed var(--gold); margin:15px 0;">
+        <div style="font-size:0.7rem; color:#888;">
+            Relatório gerado automaticamente pelo sistema de auditoria BrunoStock.
+        </div>
+    `;
+
+    document.getElementById('report-modal').classList.remove('hidden');
+};
 
         async function saveReportPDF() {
             const { jsPDF } = window.jspdf;
@@ -930,18 +1124,23 @@ if(simulationMode) {
         // --- FUNÇÕES DO SCANNER ZXING ---
         const reader = new ZXing.BrowserMultiFormatReader();
         function openScan(mode) {
-            document.getElementById('scanner').style.display = 'block';
-            reader.decodeFromVideoDevice(null, 'video', (res) => { 
-                if(res) { 
-                    stopScan(); 
-                    if(mode === 'estoque') {
-                        fillForm(res.text);
-                    } else {
-                        handleBip(res.text, mode === 'troca' ? -1 : 1); 
-                    }
-                } 
-            });
+    document.getElementById('scanner').style.display = 'block';
+
+    reader.decodeFromVideoDevice(null, 'video', (res) => {
+        if(res) {
+            if(mode === 'estoque') {
+                fillForm(res.text);
+            } else {
+                handleBip(res.text, mode === 'troca' ? -1 : 1);
+            }
+
+            play('bip');
+
+            // Pequeno delay para evitar leitura duplicada imediata
+            setTimeout(() => {}, 800);
         }
+    });
+}
         function stopScan() { 
             reader.reset(); 
             document.getElementById('scanner').style.display = 'none'; 
@@ -1061,6 +1260,96 @@ document.addEventListener("DOMContentLoaded", function () {
         el.innerText = `© ${year} Carlos França — All Rights Reserved`;
     }
 });
+function confirmPeso() {
+    const peso = parseFloat(document.getElementById("peso-input").value);
+    if(!peso || peso <= 0) return alert("Peso inválido.");
+
+    const p = produtoPesoTemp.produto;
+    const mult = produtoPesoTemp.mult;
+
+    cart.push({
+        ...p,
+        item_qty: peso,
+        base_venda: p.venda,
+        base_custo: p.custo,
+        venda: p.venda * mult,
+        custo: p.custo * mult
+    });
+
+    document.getElementById("peso-modal").classList.add("hidden");
+    play(mult < 0 ? 'troca' : 'bip');
+    renderCart();
+}
+
+function cancelPeso() {
+    document.getElementById("peso-modal").classList.add("hidden");
+    produtoPesoTemp = null;
+}
+// FUNDO DOURADO ANIMADO PIN
+document.addEventListener("DOMContentLoaded", function () {
+
+    const canvas = document.getElementById("goldParticles");
+    if(!canvas) return;
+
+    const ctx = canvas.getContext("2d");
+    let particles = [];
+    let w, h;
+
+    function resize() {
+        w = canvas.width = window.innerWidth;
+        h = canvas.height = window.innerHeight;
+    }
+
+    window.addEventListener("resize", resize);
+    resize();
+
+    for(let i = 0; i < 60; i++) {
+        particles.push({
+            x: Math.random() * w,
+            y: Math.random() * h,
+            r: Math.random() * 2 + 1,
+            d: Math.random() * 0.5 + 0.2
+        });
+    }
+
+    function draw() {
+        ctx.clearRect(0, 0, w, h);
+        ctx.fillStyle = "rgba(212,175,55,0.6)";
+        particles.forEach(p => {
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
+            ctx.fill();
+        });
+        update();
+        requestAnimationFrame(draw);
+    }
+
+    function update() {
+        particles.forEach(p => {
+            p.y -= p.d;
+            if(p.y < 0) {
+                p.y = h;
+                p.x = Math.random() * w;
+            }
+        });
+    }
+
+    draw();
+});
+function saveCashStart() {
+    const valor = parseFloat(document.getElementById("cash-start").value || 0);
+    const hoje = new Date().toISOString().split('T')[0];
+
+    const tx = db.transaction("cashflow", "readwrite");
+    tx.objectStore("cashflow").put({
+        date: hoje,
+        valor: valor
+    });
+
+    tx.oncomplete = () => {
+        document.getElementById("cash-status").innerText = "Caixa salvo para hoje.";
+    };
+}
     </script>
 <footer class="dev-signature">
     <div>Sistema de Gestão Profissional</div>
