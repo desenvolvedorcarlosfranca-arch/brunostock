@@ -78,7 +78,7 @@ body.light .card {
 #cart-items,
 #report-content,
 #quick-results {
-    overflow-x: auto !important;
+    overflow-x: hidden;
 }
 
 /* Scroll horizontal neon */
@@ -296,17 +296,32 @@ body.light .card {
     </div>
 
     <div id="pinScreen"
-style="position:fixed; inset:0;
+style="position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100vh;
 background: radial-gradient(circle at top, #002b3a, #000814 70%);
-z-index:99999; display:flex; flex-direction:column;
-align-items:center; justify-content:center; overflow:hidden;">
+z-index:99999;
+display:flex;
+align-items:center;
+justify-content:center;
+overflow:hidden;">
 
     <!-- FUNDO ANIMADO -->
     <canvas id="goldParticles"
     style="position:absolute; inset:0; z-index:0;"></canvas>
 
-    <!-- CONTEÚDO -->
-    <div style="position:relative; z-index:1; text-align:center;">
+    <div style="position:relative;
+            z-index:1;
+            text-align:center;
+            width:100%;
+            max-width:380px;
+            margin:0 auto;
+            padding:25px 20px;
+            display:flex;
+            flex-direction:column;
+            justify-content:center;">
 
         <img src="logo.png"
         style="width:120px; height:120px; border-radius:50%;
@@ -319,42 +334,63 @@ align-items:center; justify-content:center; overflow:hidden;">
         </h2>
 
         <div id="pin-dots"
-        style="display:flex; gap:18px; margin:35px 0;">
+style="display:flex;
+justify-content:center;
+align-items:center;
+gap:18px;
+margin:35px auto;
+width:100%;">
             <div class="dot"></div>
             <div class="dot"></div>
             <div class="dot"></div>
             <div class="dot"></div>
         </div>
 
-        <div style="display:grid;
-        grid-template-columns:repeat(3,75px);
-        gap:22px; justify-content:center;">
-            <script>
-                for(let i=1;i<=9;i++)
-                document.write(`<button onclick="typePin('${i}')"
-                class="btn btn-gold"
-                style="border-radius:50%; width:75px;
-                height:75px; font-size:1.5rem;">${i}</button>`);
-            </script>
+      <div style="display:grid;
+grid-template-columns:repeat(3, minmax(70px, 22vw));
+gap:4vw;
+justify-content:center;
+max-width:320px;
+margin:25px auto 0 auto;">
 
-            <button onclick="location.reload()"
-            class="btn btn-red"
-            style="border-radius:50%; width:75px; height:75px;">
-            <i class="fa-solid fa-rotate"></i></button>
+<script>
+for(let i=1;i<=9;i++){
+    document.write(
+        '<button onclick="typePin(\''+i+'\')" class="btn btn-gold" ' +
+        'style="border-radius:50%;width:100%;aspect-ratio:1/1;font-size:clamp(1.2rem,4vw,1.6rem);">' +
+        i +
+        '</button>'
+    );
+}
+</script>
 
-            <button onclick="typePin('0')"
-            class="btn btn-gold"
-            style="border-radius:50%; width:75px;
-            height:75px; font-size:1.5rem;">0</button>
+<button onclick="location.reload()"
+class="btn btn-red"
+style="border-radius:50%;width:100%;aspect-ratio:1/1;">
+<i class="fa-solid fa-rotate"></i>
+</button>
 
-            <button onclick="resetPin()"
-            class="btn btn-blue"
-            style="border-radius:50%; width:75px; height:75px;
-            background:transparent;
-            border:2px solid var(--blue-neon);
-            color:var(--blue-neon);">
-            <i class="fa-solid fa-eraser"></i></button>
-        </div>
+<button onclick="typePin('0')"
+class="btn btn-gold"
+style="border-radius:50%;
+       width:100%;
+       aspect-ratio:1/1;
+       font-size:clamp(1.2rem,4vw,1.6rem);">
+0
+</button>
+
+<button onclick="resetPin()"
+class="btn btn-blue"
+style="border-radius:50%;
+       width:100%;
+       aspect-ratio:1/1;
+       background:transparent;
+       border:2px solid var(--blue-neon);
+       color:var(--blue-neon);">
+<i class="fa-solid fa-eraser"></i>
+</button>
+
+</div>
 
         <small id="pin-copyright"
         style="margin-top:50px; display:block;
@@ -667,8 +703,8 @@ display:flex; align-items:center; justify-content:center; z-index:100002;">
             if(pAcc.length < 4) {
                 pAcc += n; 
                 document.querySelectorAll('.dot')[pAcc.length-1].style.background = "var(--gold)";
-                // PIN normal (7979)
-if(pAcc === "7979") {
+                // PIN normal (5584)
+if(pAcc === "5584") {
     simulationMode = false;
     login();
     return;
@@ -1046,47 +1082,69 @@ if(simulationMode) {
         }
 
         function generateReport(days) {
-            const limit = new Date(); 
-            limit.setDate(new Date().getDate() - days);
-            let totals = { v:0, l:0, f:0, c:0, a:0 };
-            let caixaInicial = 0;
-           db.transaction("cashflow").objectStore("cashflow").getAll().onsuccess = (ev) => {
 
-    ev.target.result.forEach(c => {
-        if(new Date(c.date) >= limit) {
-            caixaInicial += c.valor;
-        }
-    });
+    const limit = new Date();
+    limit.setDate(new Date().getDate() - days);
 
-    currentReportData = { ...totals, caixaInicial, days };
+    let totals = { v:0, l:0, f:0, c:0, a:0 };
+    let caixaInicial = 0;
 
-    const labels = {
-        1:'Diário',
-        7:'Semanal',
-        15:'Quinzenal',
-        30:'Mensal',
-        90:'Trimestral',
-        365:'Anual'
+    db.transaction("sales").objectStore("sales").getAll().onsuccess = (e) => {
+
+        e.target.result.forEach(s => {
+            if(new Date(s.date) >= limit) {
+                if(s.metodo === 'casa') totals.c += s.custo;
+                else if(s.metodo === 'avaria') totals.a += Math.abs(s.custo);
+                else {
+                    totals.v += s.total;
+                    totals.l += s.lucro;
+                    if(s.metodo === 'fiado') totals.f += s.total;
+                }
+            }
+        });
+
+        db.transaction("cashflow").objectStore("cashflow").getAll().onsuccess = (ev) => {
+
+            ev.target.result.forEach(c => {
+                if(new Date(c.date) >= limit) {
+                    caixaInicial += c.valor;
+                }
+            });
+
+            currentReportData = { ...totals, caixaInicial, days };
+
+            const labels = {
+                1:'Diário',
+                7:'Semanal',
+                15:'Quinzenal',
+                30:'Mensal',
+                90:'Trimestral',
+                365:'Anual'
+            };
+
+            document.getElementById('report-title').innerText =
+                "Resumo " + labels[days];
+
+            document.getElementById('report-content').innerHTML = `
+                <div class="report-line"><span>Caixa Inicial:</span><b>R$ ${caixaInicial.toFixed(2)}</b></div>
+                <div class="report-line"><span>Total Bruto:</span><b>R$ ${totals.v.toFixed(2)}</b></div>
+                <div class="report-line"><span>Lucro Estimado:</span><b style="color:var(--green-neon)">R$ ${totals.l.toFixed(2)}</b></div>
+                <div class="report-line"><span>Total em Fiado:</span><b style="color:var(--red-neon)">R$ ${totals.f.toFixed(2)}</b></div>
+                <div class="report-line"><span>Gasto Operacional (Casa):</span><b>R$ ${totals.c.toFixed(2)}</b></div>
+                <div class="report-line"><span>Prejuízo (Avarias):</span><b>R$ ${totals.a.toFixed(2)}</b></div>
+                <hr style="border:0; border-top:1px dashed var(--gold); margin:15px 0;">
+                <div style="font-size:0.7rem; color:#888;">
+                    Relatório gerado automaticamente pelo sistema de auditoria BrunoStock.
+                </div>
+            `;
+
+            document.getElementById('report-modal').classList.remove('hidden');
+
+        };
+
     };
 
-    document.getElementById('report-title').innerText =
-        "Resumo " + labels[days];
-
-    document.getElementById('report-content').innerHTML = `
-        <div class="report-line"><span>Caixa Inicial:</span><b>R$ ${caixaInicial.toFixed(2)}</b></div>
-        <div class="report-line"><span>Total Bruto:</span><b>R$ ${totals.v.toFixed(2)}</b></div>
-        <div class="report-line"><span>Lucro Estimado:</span><b style="color:var(--green-neon)">R$ ${totals.l.toFixed(2)}</b></div>
-        <div class="report-line"><span>Total em Fiado:</span><b style="color:var(--red-neon)">R$ ${totals.f.toFixed(2)}</b></div>
-        <div class="report-line"><span>Gasto Operacional (Casa):</span><b>R$ ${totals.c.toFixed(2)}</b></div>
-        <div class="report-line"><span>Prejuízo (Avarias):</span><b>R$ ${totals.a.toFixed(2)}</b></div>
-        <hr style="border:0; border-top:1px dashed var(--gold); margin:15px 0;">
-        <div style="font-size:0.7rem; color:#888;">
-            Relatório gerado automaticamente pelo sistema de auditoria BrunoStock.
-        </div>
-    `;
-
-    document.getElementById('report-modal').classList.remove('hidden');
-};
+}
 
         async function saveReportPDF() {
             const { jsPDF } = window.jspdf;
